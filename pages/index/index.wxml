@@ -1,0 +1,122 @@
+<!--index.wxml-->
+<view class="h-screen flex flex-col bg-gradient-primary" style="padding-top: env(safe-area-inset-top);">
+  <!-- 顶部标题栏 -->
+  <view class="flex justify-between items-center px-5 py-4 bg-white bg-opacity-95 backdrop-blur shadow-lg relative z-50">
+    <view class="text-2xl font-bold text-gradient-primary">{{texts.appTitle}}</view>
+    <view class="flex items-center bg-white bg-opacity-80 rounded-full px-3 py-2 shadow-md" bindtap="toggleLanguage">
+      <text class="text-sm text-gray-600 mr-2 font-medium">{{currentLanguage === 'zh-CN' ? 'EN/CN' : 'CN/EN'}}</text>
+      <switch class="transform scale-75" checked="{{currentLanguage === 'zh-CN'}}" bindchange="onLanguageChange"/>
+    </view>
+  </view>
+
+  <!-- 主体内容 -->
+  <view class="flex-1 flex overflow-hidden m-3 rounded-2xl bg-white bg-opacity-95 backdrop-blur shadow-xl">
+    <!-- 左侧分类菜单 -->
+    <scroll-view class="w-40 bg-gradient-gray rounded-l-2xl border-r border-gray-200" scroll-y>
+      <view class="px-3 py-4 text-lg font-semibold text-gray-800 bg-gradient-primary bg-opacity-10 border-b border-gray-200 rounded-tl-2xl flex items-center">
+        <view class="text-base mr-2">📋</view>
+        {{texts.categories}}
+      </view>
+      
+      <view wx:if="{{categoriesLoading}}" class="flex flex-col justify-center items-center py-20 text-gray-400 text-center">
+        <view class="text-2xl mb-3 animate-spin">⏳</view>
+        <text class="text-sm">{{texts.loading}}</text>
+      </view>
+      
+      <view wx:elif="{{categoriesError}}" class="flex flex-col justify-center items-center py-20 text-gray-400 text-center">
+        <view class="text-2xl mb-3">❌</view>
+        <text class="text-sm mb-4">{{texts.error}}</text>
+        <button class="px-4 py-2 bg-gradient-primary text-white rounded-lg text-sm font-semibold shadow-md" bindtap="loadCategories" size="mini">{{texts.retry}}</button>
+      </view>
+      
+      <view wx:elif="{{categories.length === 0}}" class="flex flex-col justify-center items-center py-20 text-gray-400 text-center">
+        <view class="text-2xl mb-3">📦</view>
+        <text class="text-sm">{{texts.noCategories}}</text>
+      </view>
+      
+      <view wx:else class="py-3">
+        <view 
+          wx:for="{{categories}}" 
+          wx:key="id" 
+          class="border-b border-gray-100 relative transition-all"
+          bindtap="selectCategory"
+          data-category="{{item}}"
+        >
+          <text class="block px-4 py-3 text-sm text-gray-700 text-left transition-all {{selectedCategoryId === item.id ? 'bg-gradient-primary text-white font-semibold transform translate-x-1' : ''}}">{{item.name}}</text>
+          
+          <!-- 子分类 -->
+          <view wx:if="{{item.children && item.children.length > 0}}" class="bg-gray-50 bg-opacity-80">
+            <view 
+              wx:for="{{item.children}}" 
+              wx:for-item="subItem"
+              wx:key="id"
+              class="relative transition-all"
+              bindtap="selectCategory"
+              data-category="{{subItem}}"
+            >
+              <text class="block px-6 py-2 text-xs text-gray-600 text-left transition-all {{selectedCategoryId === subItem.id ? 'bg-blue-100 text-blue-600 font-semibold' : ''}}">{{subItem.name}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 右侧产品列表 -->
+    <scroll-view class="flex-1 bg-gradient-light p-4 rounded-r-2xl" scroll-y>
+      <view wx:if="{{!selectedCategoryId}}" class="flex flex-col justify-center items-center h-64 text-gray-400 text-center">
+        <view class="text-3xl mb-4 animate-bounce">👋</view>
+        <text class="text-lg font-medium">请选择产品分类</text>
+      </view>
+      
+      <view wx:elif="{{productsLoading}}" class="flex flex-col justify-center items-center h-64 text-gray-400 text-center">
+        <view class="text-3xl mb-4 animate-spin">⏳</view>
+        <text class="text-lg">{{texts.loading}}</text>
+      </view>
+      
+      <view wx:elif="{{productsError}}" class="flex flex-col justify-center items-center h-64 text-gray-400 text-center">
+        <view class="text-3xl mb-4">❌</view>
+        <text class="text-lg mb-4">{{texts.error}}</text>
+        <button class="px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold shadow-lg" bindtap="loadProducts" size="mini">{{texts.retry}}</button>
+      </view>
+      
+      <view wx:elif="{{products.length === 0}}" class="flex flex-col justify-center items-center h-64 text-gray-400 text-center">
+        <view class="text-3xl mb-4">📦</view>
+        <text class="text-lg">{{texts.noProducts}}</text>
+      </view>
+      
+      <view wx:else class="flex flex-col gap-4">
+        <view 
+          wx:for="{{products}}" 
+          wx:key="id" 
+          class="flex bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 transition-all duration-300 hover:shadow-xl hover:scale-105"
+          bindtap="viewProduct"
+          data-product="{{item}}"
+        >
+          <!-- 产品图片 -->
+          <view class="w-32 h-24 flex-shrink-0 bg-gradient-gray relative overflow-hidden">
+            <image 
+              wx:if="{{item.media && item.media.length > 0}}"
+              class="w-full h-full transition-transform duration-300" 
+              src="{{item.media[0].url}}" 
+              mode="aspectFill"
+            />
+            <view wx:else class="w-full h-full flex flex-col justify-center items-center bg-gradient-gray">
+              <view class="text-2xl mb-1 opacity-60">🖼️</view>
+              <text class="text-xs text-gray-400 font-medium">暂无图片</text>
+            </view>
+          </view>
+          
+          <!-- 产品信息 -->
+          <view class="flex-1 p-4 flex flex-col justify-between min-w-0">
+            <text class="text-lg font-semibold text-gray-800 mb-2 text-left truncate">{{item.name}}</text>
+            <text class="text-sm text-gray-600 leading-relaxed text-left flex-1 mb-3 line-clamp-2">{{item.description}}</text>
+            <view class="flex items-baseline bg-gradient-primary bg-opacity-10 px-3 py-2 rounded-lg self-start">
+              <text class="text-sm text-gradient-primary font-semibold">{{texts.currency}}</text>
+              <text class="text-xl text-gradient-primary font-bold ml-1">{{item.price}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

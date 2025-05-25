@@ -1,0 +1,61 @@
+<!--product-detail.wxml-->
+<view class="min-h-screen bg-gradient-primary p-3">
+  <view wx:if="{{loading}}" class="flex flex-col justify-center items-center h-screen text-gray-400 text-center bg-white bg-opacity-95 backdrop-blur rounded-2xl mx-3 shadow-xl">
+    <view class="text-3xl mb-4 animate-spin">⏳</view>
+    <text class="text-lg font-medium">{{texts.loading}}</text>
+  </view>
+  
+  <view wx:elif="{{error}}" class="flex flex-col justify-center items-center h-screen text-gray-400 text-center bg-white bg-opacity-95 backdrop-blur rounded-2xl mx-3 shadow-xl">
+    <view class="text-3xl mb-4">❌</view>
+    <text class="text-lg mb-4">{{texts.error}}</text>
+    <button class="px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold shadow-lg" bindtap="loadProduct" size="mini">{{texts.retry}}</button>
+  </view>
+  
+  <view wx:elif="{{product}}" class="flex flex-col gap-0">
+    <!-- 产品媒体 -->
+    <swiper class="w-full h-64 bg-white rounded-t-2xl overflow-hidden shadow-lg" indicator-dots="{{product.media.length > 1}}" autoplay="{{false}}">
+      <swiper-item wx:for="{{product.media}}" wx:key="id">
+        <image 
+          wx:if="{{item.type === 'image'}}"
+          class="w-full h-full transition-transform duration-300" 
+          src="{{item.url}}" 
+          mode="aspectFit"
+          bindtap="previewImage"
+          data-url="{{item.url}}"
+          data-urls="{{imageUrls}}"
+        />
+        <video 
+          wx:elif="{{item.type === 'video'}}"
+          class="w-full h-full"
+          src="{{item.url}}"
+          controls
+          show-center-play-btn
+        />
+      </swiper-item>
+    </swiper>
+
+    <!-- 产品信息 -->
+    <view class="bg-white bg-opacity-95 backdrop-blur rounded-b-2xl p-5 shadow-lg relative">
+      <view class="border-b border-gray-200 pb-4 mb-4">
+        <text class="block text-2xl font-bold text-gray-800 mb-3 leading-tight">{{product.name}}</text>
+        <view class="flex items-baseline bg-gradient-primary bg-opacity-10 px-4 py-3 rounded-xl mb-3 self-start">
+          <text class="text-lg text-gradient-primary font-semibold">{{texts.currency}}</text>
+          <text class="text-3xl text-gradient-primary font-bold ml-1">{{product.price}}</text>
+        </view>
+        <view class="inline-block bg-gray-100 px-3 py-1 rounded-lg">
+          <text class="text-sm text-gray-600 font-medium">SKU: {{product.sku}}</text>
+        </view>
+      </view>
+
+      <view class="mt-4">
+        <view class="flex items-center mb-3">
+          <view class="text-lg mr-2">📝</view>
+          <text class="text-xl font-semibold text-gray-800">{{texts.productDescription}}</text>
+        </view>
+        <view class="bg-gray-50 bg-opacity-60 p-4 rounded-xl border-l-4 border-gradient-primary">
+          <text class="text-base text-gray-700 leading-relaxed">{{product.description}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 
